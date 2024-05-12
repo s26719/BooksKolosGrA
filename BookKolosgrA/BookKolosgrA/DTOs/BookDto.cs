@@ -8,5 +8,5 @@ public class BookDto
     [MaxLength(100)]
     public string Title { get; set; }
 
-    public List<BookGenres> genres { get; set; }
+    public List<string> genres { get; set; }
 }

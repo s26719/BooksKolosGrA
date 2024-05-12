@@ -21,17 +21,26 @@ public class BookRepository : IBookRepository
         using var cmd = new SqlCommand();
         cmd.Connection = con;
 
-        cmd.CommandText = "Select * from books Where PK = @idBook";
+        cmd.CommandText = "select  b.PK, b.title, g.name from books b\njoin books_genres bg ON bg.FK_book = b.PK\njoin genres g ON g.PK = bg.FK_genre\nwhere b.PK = @idbook";
         cmd.Parameters.AddWithValue("@idBook", id);
         using var reader = await cmd.ExecuteReaderAsync();
-
         if (await reader.ReadAsync())
         {
             BookDto book = new()
             {
                 IdBook = int.Parse(reader["PK"].ToString()),
-                Title = reader["title"].ToString()
+                Title = reader["title"].ToString(),
+                genres = new List<string>()
             };
+
+
+            do
+            {
+                {
+                    book.genres.Add(reader["name"].ToString());
+                }
+
+            } while (await reader.ReadAsync());
             return book;
         }
         else
@@ -57,6 +66,21 @@ public class BookRepository : IBookRepository
                        cmd.Parameters.AddWithValue("@title", bookAddDto.title);
                        idBook = (int)await cmd.ExecuteScalarAsync();
                    }
+            
+            // sprawdzamy czy nasze idGenre istnieje
+            foreach (int genreId in bookAddDto.genres)
+            {
+                using (var cmd = new SqlCommand("Select count(*) from genres where PK = @idgenre", con, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@idgenre", genreId);
+                    var genresCount = (int)await cmd.ExecuteScalarAsync();
+                    if (genresCount ==0)
+                    {
+                        throw new NotFoundException("nie ma genre o podanym id");
+                    }
+                }
+            }
+            
             // przypisujemy do ksiazki gatunki
             foreach (int genreId in bookAddDto.genres)
             {
@@ -77,9 +101,11 @@ public class BookRepository : IBookRepository
         catch (NotFoundException e)
         {
             await transaction.RollbackAsync();
-            throw new NotFoundException("nie dziala??");
+            throw new NotFoundException($"{e}");
 
         }
         
     }
+
+ 
 }

@@ -19,7 +19,7 @@ public class BookService : IBookService
     {
         var genres = await _genreRepository.GetGenresByIdBook(id);
         var result = await _bookRepository.GetBooks(id);
-        result.genres= genres;
+        //result.genres= genres;
         return result;
     }
 
@@ -29,7 +29,7 @@ public class BookService : IBookService
         var bookToAdd = await _bookRepository.AddBooks(bookAddDto);
         var genres = await _genreRepository.GetGenresByIdBook(bookToAdd);
         var result = await _bookRepository.GetBooks(bookToAdd);
-        result.genres = genres;
+        //result.genres = genres;
         return result;
     }
 }

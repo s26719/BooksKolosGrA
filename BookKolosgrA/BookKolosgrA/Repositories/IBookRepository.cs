@@ -6,4 +6,5 @@ public interface IBookRepository
 {
     Task<BookDto> GetBooks(int id);
     Task<int> AddBooks(BookAddDto bookAddDto);
+    
 }
